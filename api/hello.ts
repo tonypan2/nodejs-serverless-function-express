@@ -12,8 +12,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     const client = await clientPromise;
     
-    const db = client.db("atlas-blue-jacket");
-    const collection = db.collection("sample_restaurants.neighborhoods");
+    const db = client.db("sample_restaurants");
+    const collection = db.collection("neighborhoods");
 
     const documents = await collection.find({}).limit(10).toArray();
 
