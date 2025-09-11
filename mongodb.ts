@@ -1,4 +1,5 @@
 import { MongoClient, MongoClientOptions } from 'mongodb';
+import { attachDatabasePool } from '@vercel/functions';
 
 const uri = process.env.MONGODB_URI;
 const options: MongoClientOptions = {
@@ -14,16 +15,25 @@ if (uri) {
     // is preserved across module reloads caused by HMR (Hot Module Replacement).
     const globalWithMongo = global as typeof globalThis & {
       _mongoClientPromise?: Promise<MongoClient>;
+      _mongoClient?: MongoClient;
     };
 
     if (!globalWithMongo._mongoClientPromise) {
       client = new MongoClient(uri, options);
+      globalWithMongo._mongoClient = client;
       globalWithMongo._mongoClientPromise = client.connect();
+      
+      // Attach the client to ensure proper cleanup on function suspension
+      attachDatabasePool(client);
     }
     clientPromise = globalWithMongo._mongoClientPromise;
   } else {
     // In production mode, it's best to not use a global variable.
     client = new MongoClient(uri, options);
+    
+    // Attach the client to ensure proper cleanup on function suspension
+    attachDatabasePool(client);
+    
     clientPromise = client.connect();
   }
 }
