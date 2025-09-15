@@ -1,27 +1,19 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
-import clientPromise from "../mongodb";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { withClient } from "../mongodb";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    // Check if MongoDB URI is configured
-    if (!clientPromise) {
-      return res.status(500).json({
-        error: 'Database connection not configured'
-      })
-    }
-    
-    const client = await clientPromise;
-    
-    const db = client.db("sample_restaurants");
-    const collection = db.collection("neighborhoods");
-
-    const documents = await collection.find({}).limit(10).toArray();
+    const documents = await withClient(async (client) => {
+      const db = client.db("sample_restaurants");
+      const collection = db.collection("neighborhoods");
+      return collection.find({}).limit(10).toArray();
+    });
 
     return res.json(documents);
   } catch (error) {
-    console.error('Database connection error:', error);
+    console.error("Database connection error:", error);
     return res.status(500).json({
-      error: 'Failed to connect to database'
-    })
+      error: "Failed to connect to database",
+    });
   }
 }
