@@ -1,4 +1,4 @@
-import { MongoClient, MongoClientOptions } from "mongodb";
+import { ClientSession, MongoClient, MongoClientOptions } from "mongodb";
 import { attachDatabasePool } from "@vercel/functions";
 
 const uri = process.env.MONGODB_URI;
@@ -19,9 +19,6 @@ if (uri) {
     if (!globalWithMongo._mongoClient) {
       client = new MongoClient(uri, options);
       globalWithMongo._mongoClient = client;
-
-      // Attach the client to ensure proper cleanup on function suspension
-      attachDatabasePool(client);
     }
   } else {
     // In production mode, it's best to not use a global variable.
@@ -35,10 +32,16 @@ if (uri) {
 export async function withClient<T>(
   callback: (client: MongoClient) => Promise<T>
 ): Promise<T> {
-  const connection = await client.connect();
+  return await callback(client);
+}
+
+export async function withSession<T>(
+  callback: (client: ClientSession) => Promise<T>
+): Promise<T> {
+  const session = client.startSession();
   try {
-    return await callback(connection);
+    return await callback(session);
   } finally {
-    connection.close();
+    session.endSession();
   }
 }
