@@ -4,7 +4,7 @@ import { attachDatabasePool } from "@vercel/functions";
 const uri = process.env.MONGODB_URI;
 const options: MongoClientOptions = {
   appName: "devrel.vercel.integration",
-  retryReads: true,
+  // retryReads: true,
 };
 
 let client: MongoClient;
