@@ -3,7 +3,14 @@ import { withClient } from "../mongodb";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    const documents = await withClient(async (client) => {
+    const url = req.url || "/";
+    const searchParams = new URLSearchParams(
+      url.indexOf("?") !== -1 ? url.substring(url.indexOf("?") + 1) : ""
+    );
+    const config = searchParams.get("config") || "{}";
+    const configObj = JSON.parse(config);
+
+    const documents = await withClient(configObj, async (client) => {
       const db = client.db("sample_restaurants");
       const collection = db.collection("neighborhoods");
       return collection.find({}).limit(10).toArray();
