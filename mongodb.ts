@@ -4,6 +4,7 @@ import { attachDatabasePool } from "@vercel/functions";
 const uri = process.env.MONGODB_URI;
 const options: MongoClientOptions = {
   appName: "devrel.vercel.integration",
+  retryReads: true,
 };
 
 let client: MongoClient;
@@ -26,6 +27,12 @@ if (uri) {
 
     // Attach the client to ensure proper cleanup on function suspension
     attachDatabasePool(client);
+
+    console.log("CLIENT_OPTIONS:", {
+      retryReads: client.options.retryReads,
+      retryWrites: client.options.retryWrites,
+      fluid: process.env.VERCEL_FLUID,
+    });
   }
 }
 
