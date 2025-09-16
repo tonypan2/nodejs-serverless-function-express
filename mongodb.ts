@@ -27,6 +27,12 @@ if (uri) {
 
     // Attach the client to ensure proper cleanup on function suspension
     attachDatabasePool(client);
+
+    console.log("CLIENT_OPTIONS:", {
+      retryReads: client.options.retryReads,
+      retryWrites: client.options.retryWrites,
+      fluid: process.env.VERCEL_FLUID,
+    });
   }
 }
 
